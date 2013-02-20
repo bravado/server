@@ -1,0 +1,74 @@
+<ul class="breadcrumb affix">
+    <li class="pull-right btn-toolbar">
+
+        <!-- ko if: false && model() && model().uidnumber() -->
+        <div class="btn-group">
+            <button data-bind="click: destroy" data-close="true"
+                    data-confirm="{{nls.confirm}}"
+                    class="btn btn-mini btn-danger"><i
+                    class="icon-trash"></i>
+                {{nls.delete}}
+            </button>
+        </div>
+        <!-- /ko -->
+
+        <div class="btn-group">
+            <button data-bind="click: save" data-close="true"
+                    class="btn btn-mini btn-primary"><i
+                    class="icon-save"></i>
+                {{nls.save}}
+            </button>
+            <!--button class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown">
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="#" data-bind="click: save" data-close="true">Gravar e fechar</a></li>
+            </ul-->
+        </div>
+    </li>
+    <li><a href="#" data-bind="click: close">{{nls.all}}</a> <span
+            class="divider">/</span></li>
+    <li class="active"
+        data-bind="text: model() && (model().uid() ? model().uid() : '{{nls.untitled}}')">
+        Current
+    </li>
+
+</ul>
+<div class="container-fluid" >
+<form class="form-horizontal" data-bind="with: model">
+
+    <div class="control-group">
+        <label class="control-label" for="forum-title">Login</label>
+
+        <div class="controls">
+            <input type="text" class="" id="forum-title"
+                   data-bind="value: uid, disable: uidnumber">
+        </div>
+
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="forum-nome">Nome</label>
+
+        <div class="controls">
+            <input type="text" class="" id="forum-nome"
+                   data-bind="value: displayname">
+        </div>
+
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="forum-slug">Senha</label>
+
+        <div class="controls">
+            <input type="password" class="" id="forum-slug"
+                   data-bind="value: password">
+        </div>
+
+    </div>
+
+
+</form>
+
+
+</div>
