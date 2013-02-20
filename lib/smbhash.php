@@ -280,7 +280,7 @@ class smbHash {
             $out[$i] = 0;
         }
         for ($i = 0; $i < 65; $i++) {
-            if ( $outb[$i] )  {
+            if ( isset($outb[$i]) )  {
                 $out[$i/8] |= (1<<(7-($i%8)));
             }
         }

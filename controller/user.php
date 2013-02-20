@@ -378,7 +378,7 @@ function user_update($uidnumber)
     $attrs = array();
     $dn = sprintf("uid=%s,%s,%s", $user['uid'], LDAP_USEROU, LDAP_BASE);
 
-    if(!empty($_POST['gecos']))
+    if(!empty($data['gecos']))
         $attrs['gecos'] = tiraAcentos($data['gecos']);
 
     // Grupo mudou ?
@@ -401,7 +401,7 @@ function user_update($uidnumber)
     $user = array_merge($user, $attrs);
 
     if(!empty($data['passwd'])) {
-        $attrs = passwd_attrs($_POST['passwd'], $attrs);
+        $attrs = passwd_attrs($data['passwd'], $attrs);
     }
 
     if(ldap_modify($ldap, $dn, $attrs))
@@ -699,7 +699,7 @@ function passwd_attrs($passwd, $attrs = array())
     # TODO shadowLastChange, shadowMin, shadowMax, shadowWarning ?
 
     // Unix
-    $attrs['userpassword'] = "{crypt}" . crypt($passwd, '$1$' . substr(session_id(), 0, 8));
+    $attrs['userpassword'] = '{SSHA}' . base64_encode(sha1( $passwd.$salt, TRUE ). $salt);
 
     $smbhash = new smbHash();
     $attrs['sambalmpassword'] = $smbhash->lmhash($passwd);
