@@ -2,11 +2,7 @@
 
 defined('LDAP_PORT') or define('LDAP_PORT', 389);
 defined('LDAP_VERSION') or define('LDAP_VERSION', 3);
-$ldap = ldap_login(LDAP_ADMINDN, LDAP_PW);
 
-if(!$ldap) {
-    respond('Cannot connect to LDAP server, check settings', 500);
-}
 
 /**
  * Take an LDAP and make an associative array from it.

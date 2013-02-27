@@ -4,11 +4,12 @@ define(function() {
 
     var Model = {};
 
-    Model.User = metaproject.Model({
-        uid: null,
-        uidnumber: null,
-        gecos: null,
-        password: null
+    Model.Group = metaproject.Model({
+        cn: null,
+        gidnumber: null,
+        sambasid: null,
+        sambagrouptype: null,
+        displayname: null
     });
 
     return Model;

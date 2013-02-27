@@ -10,7 +10,7 @@ define(['Boiler'], function (Boiler) {
         self.model = ko.observable();
 
         self.close = function () {
-            Boiler.UrlController.goTo("users");
+            Boiler.UrlController.goTo("groups");
         };
 
         self.load = function (id) {
@@ -18,7 +18,7 @@ define(['Boiler'], function (Boiler) {
                 moduleContext.ds.get(id, self.model);
             }
             else {
-                self.model(moduleContext.ds.create(moduleContext.threadParams));
+                self.model(moduleContext.ds.create());
             }
         };
 

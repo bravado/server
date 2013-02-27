@@ -9,6 +9,8 @@ define(['Boiler'], function (Boiler) {
 
         self.model = ko.observable();
 
+        self.groups = ko.observableArray().subscribeTo('groups', true);
+
         self.close = function () {
             Boiler.UrlController.goTo("users");
         };

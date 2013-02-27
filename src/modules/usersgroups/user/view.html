@@ -48,11 +48,22 @@
     </div>
 
     <div class="control-group">
-        <label class="control-label" for="forum-nome">Nome</label>
+        <label class="control-label" for="user-gecos">Nome</label>
 
         <div class="controls">
-            <input type="text" class="" id="forum-nome"
+            <input type="text" class="" id="user-gecos"
                    data-bind="value: gecos">
+        </div>
+
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="user-gidnumber">Grupo</label>
+
+        <div class="controls">
+            <select id="user-gidnumber"
+                   data-bind="options: $root.groups, optionsText: 'cn', optionsValue: 'gidnumber', value: gidnumber">
+                </select>
         </div>
 
     </div>

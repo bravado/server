@@ -2,7 +2,10 @@
 define(['Boiler', './model', './viewmodel', 'text!./view.html', 'i18n!./nls/resources'], function(Boiler, Model, ViewModel, template, nls) {
     "use strict";
 
-    var ds = new metaproject.DataSource('controller/user.php', { model: Model.User, key: 'uidnumber' });
+    var ds = new metaproject.DataSource('controller/group.php', { model: Model.Group, key: 'gidnumber' });
+
+    new ds.Nav().publishOn('groups');
+
 	var Component = function(moduleContext) {
 
 		var vm, panel = null, context = new Boiler.Context(moduleContext);
