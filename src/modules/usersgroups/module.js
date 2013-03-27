@@ -19,7 +19,7 @@ define(['Boiler', './menu/component', './user/component', './userlist/component'
             controller = new Boiler.UrlController($(".appcontent"));
             controller.addRoutes({
                 'users':new UserListComponent(context),
-                'user/{id}': new UserComponent(context),
+                'user/:id:': new UserComponent(context),
                 'groups': new GroupListComponent(context),
                 'group/{id}': new GroupComponent(context)
             });

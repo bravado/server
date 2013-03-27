@@ -28,11 +28,12 @@ function get_local_sid() {
 
 /**
  * Returns the next id for the given attribute
+ * NOTE: this function only verifies the LDAP database, not /etc/passwd or /etc/group
  * @param string $attribute - uidnumber, gidnumber, sambanextrid, sambanextuserrid
  * @return mixed the next ID
  * @throws Exception if any error happens
  */
-function get_next_id($attribute = 'uidnumber') {
+function get_next_id($attribute) {
     global $ldap;
 
     $sr = ldap_search(
@@ -83,65 +84,7 @@ function get_next_id($attribute = 'uidnumber') {
 
 }
 
-/*
-sub get_next_id($$) {
-    my $ldap_base_dn = shift;
-    my $attribute    = shift;
-    my $tries        = 0;
-    my $found        = 0;
-    my $next_uid_mesg;
-    my $nextuid;
-    if ( $ldap_base_dn =~ m/$config{usersdn}/i ) {
 
-        # when adding a new user, we'll check if the uidNumber available is not
- # already used for a computer's account
-        $ldap_base_dn = $config{suffix};
-    }
-    do {
-        $next_uid_mesg = $ldap->search(
-            base   => $config{sambaUnixIdPooldn},
-            filter => "(objectClass=sambaUnixIdPool)",
-            scope  => "base"
-        );
-$next_uid_mesg->code
-          && die "Error looking for next uid in "
-          . $config{sambaUnixIdPooldn} . ":"
-          . $next_uid_mesg->error;
-        if ( $next_uid_mesg->count != 1 ) {
-            die "Could not find base dn, to get next $attribute";
-        }
-        my $entry = $next_uid_mesg->entry(0);
-
-        $nextuid = $entry->get_value($attribute);
-my $modify =
-          $ldap->modify( "$config{sambaUnixIdPooldn}",
-            changes => [ replace => [ $attribute => $nextuid + 1 ] ] );
-        $modify->code && die "Error: ", $modify->error;
-
-      # let's check if the id found is really free (in ou=Groups or ou=Users)...
-        my $check_uid_mesg = $ldap->search(
-            base   => $ldap_base_dn,
-            filter => "($attribute=$nextuid)",
-        );
-        $check_uid_mesg->code
-          && die "Cannot confirm $attribute $nextuid is free";
-if ( $check_uid_mesg->count == 0 ) {
-
-   # now, look if the id or gid is not already used in /etc/passwd or /etc/group
-            if ($attribute =~ /^uid/i && !getpwuid($nextuid) ||
-                $attribute =~ /^gid/i && !getgrgid($nextuid) ) {
-                $found = 1;
-                return $nextuid;
-            }
-        }
-        $tries++;
-        print
-"Cannot confirm $attribute $nextuid is free: checking for the next one\n";
-    } while ( $found != 1 );
-    die "Could not allocate $attribute!";
-}
-
-*/
 
 
 /**
@@ -181,24 +124,67 @@ function group_list() {
     return cleanUpEntries($result);
 }
 
+
+/*
+ * User functions
+ */
+
+
 function user_create($data) {
 
     global $ldap;
 
+
+
+    // 3) se não passou UID, gerar próximo UID (get_next_id())
+
+    // 4) verificar se UID não existe (getpwuid())
+
+    // 5) Se passou GID, usar GID informado, senão usar DefaultUserGID
+
+    // 6) Samba RID/GID
+
+
+    $sambaSID = get_local_sid();
+
     $attrs = array();
 
-    // Unix Account
-    $attrs['objectclass'] = array('top', 'person', 'organizationalPerson',
+    // Unix Attributes
+    $attrs['objectclass'] = array(
+        'top', 'person', 'organizationalPerson',
         'inetOrgPerson', 'posixAccount', 'shadowAccount');
 
+    // 1) Verify username regex
+    if(empty($data['uid']) || !preg_match('/^[a-z_][a-z0-9_]+$/', $data['uid'])) {
+        throw new Exception(_("Invalid username"), 500);
+    }
+
+    // 2) Verifiy if this user does not already exist
+    $sr = ldap_search(
+        $ldap,
+        sprintf("%s,%s", LDAP_USEROU, LDAP_BASE),
+        "(uid={$data['uid']})");
+    $entry = ldap_first_entry($ldap, $sr);
+
+    if($entry) {
+        throw new Exception(sprintf(_('User %s already exists'), $data['uid']));
+    }
+
+    $attrs['uid'] = $data['uid'];
+
     $attrs['cn'] = $attrs['uid'];
-    $attrs['sn'] = '';
-    $attrs['givenname'] = '';
-    $attrs['uid'] = tiraAcentos(trim(strtolower($data['uid'])));
+    $attrs['sn'] = $attrs['uid'];
+    $attrs['givenname'] = $attrs['uid'];
 
-    // Samba
-    $sambaSID = getLocalSID();
+    // TODO how to delete attribute ?
+    if (!empty($data['gecos']))
+        $attrs['gecos'] = tiraAcentos($data['gecos']);
 
+
+    // TODO allow passing any uidnumber
+    $attrs['uidnumber'] = get_next_id('uidnumber');
+
+    // Samba Attributes
     $attrs['objectclass'][] = 'sambaSAMAccount';
 
     $winmagic = 2147483647;
@@ -219,90 +205,32 @@ function user_create($data) {
     $dn = sprintf("uid=%s,%s, %s", $attrs['uid'], LDAP_USEROU, LDAP_BASE);
 
 
-    #TODO como deixar atributo em branco ?
-    if (!empty($data['gecos']))
-        $attrs['gecos'] = tiraAcentos($data['gecos']);
-
-
     $attrs['homedirectory'] = sprintf(USER_HOME, $attrs['uid']);
     $attrs['loginshell'] = USER_DEFAULTSHELL;
 
-    // check group
+    // check primary group
     $group = group_get($data['gidnumber']);
 
+    if(empty($group['sambasid'])) {
+        throw new Exception(sprintf(_('Error: SID not set for unix group %s (%d)'), $group['cn'], $group['gidnumber']), 500);
+    }
 
     $attrs['gidnumber'] = $data['gidnumber'];
 
-    // Gerar uidNumber
-    $sr = ldap_search(
-        $ldap,
-        LDAP_USEROU . ',' . LDAP_USERBASE,
-        "objectclass=posixAccount", array("uidnumber"));
-    $uids = ldap_get_entries($ldap, $sr);
-
-    $attrs['uidnumber'] = $conf['user']['firstUid'];
-    // Pega o maior uid cadastrado
-    for ($i = 0; $i < $uids['count']; $i++)
-        if ($uids[$i]['uidnumber'][0] > $attrs['uidnumber'])
-            $attrs['uidnumber'] = $uids[$i]['uidnumber'][0];
-    // Soma 1
-    $attrs['uidnumber']++;
-
-    # TODO Verificar se n�o estourou o uidNumber (65535)
-
-    // Samba
-    if ($conf['smb']) {
-        # TODO mail() aqui
-        if (!($sambaSID = sambaSID()))
-            exit("Erro verificando sambaSID");
-
-        $attrs['objectclass'][] = 'sambaSamAccount';
-        $attrs['sambaLogonTime'] = "2147483647";
-        $attrs['sambaLogoffTime'] = "2147483647";
-        $attrs['sambaKickoffTime'] = "2147483647";
-        $attrs['sambaPwdCanChange'] = "0";
-        $attrs['sambaPwdMustChange'] = "2147483647";
-        $attrs['sambaAcctFlags'] = "[UXP       ]";
-        // sambaSID = 2*uidNumber + 1000
-        // sambaPrimaryGroupSID = 2 * gidNumber + 1000 + 1
-        $attrs['sambaSID'] = "{$sambaSID}-" . (2 * $attrs['uidnumber'] + 1000);
-        $attrs ['sambaPrimaryGroupSID'] = "{$sambaSID}-{$_POST['sambaprimarygroupsid']}";
+    if(!empty($data['passwd'])) {
+        $attrs = passwd_attrs($data['passwd'], $attrs);
     }
 
-    // Gerar senha ?
-    if (empty($_POST['passwd']))
-        $_POST['passwd'] = genpasswd();
+    // Create the user on LDAP
+    $dn = sprintf("uid=%s,%s,%s", $attrs['uid'],LDAP_USEROU,LDAP_BASE);
 
-    $attrs = passwd_attrs($_POST['passwd'], $attrs);
+    if (!@ldap_add($ldap, $dn, $attrs)) {
+        print_r($attrs);
+        throw new Exception(sprintf(_("LDAP error %s"), ldap_error($ldap)), 500);
 
-    // Criar usu�rio no ldap
-    $dn = "uid={$attrs['uid']},{$conf['ldap']['userOu']},{$conf['ldap']['base']}";
-    if (!@ldap_add($ds, $dn, $attrs)) {
-        switch (ldap_errno($ds)) {
-            case 68:
-                infomsg("Nome de usu�rio j� existe!");
-                break;
-            default:
-                infomsg($dn . " " . ldap_error($ds));
-                echo "<pre>";
-                print_r($attrs);
-                echo "</pre>";
-                break;
-        }
     } else {
-        # TODO Melhorar esse programa
-        // Criar homeDirectory (programa em c)
-        @exec("{$conf['user']['homedirscript']} add " . escapeshellarg($attrs['uid']) . " " . escapeshellarg($attrs['gidnumber']) . " 2>&1", $out, $res);
-        if ($res) {
-            infomsg("N�o consegui criar diret�rio do usu�rio");
-            if (!@ldap_delete($ds, $dn)) {
-                # TODO Colocar mail() aqui
-                infomsg("N�o consegui apagar o usu�rio!\\nLembre-se ele *n�o possui um diret�rio inicial*\\nContate o suporte!");
-            }
-        } else {
-            mail("{$attrs['uid']}@colegiosantana.net", "Conta criada", "Conta criada");
-            infomsg("Criado <b>{$attrs['uid']}</b> com senha <b>{$_POST['passwd']}</b>");
-        }
+        // TODO create home dir ?
+        return $attrs;
     }
 
 
@@ -432,17 +360,6 @@ function user_create($data) {
     */
 
 
-    // 1) verificar se username é ok (regex)
-
-    // 2) verificar se usuário não existe no ldap
-
-    // 3) se não passou UID, gerar próximo UID (get_next_id())
-
-    // 4) verificar se UID não existe (getpwuid())
-
-    // 5) Se passou GID, usar GID informado, senão usar DefaultUserGID
-
-    // 6) Samba RID/GID
     /*
     # as grouprid we use the value of the sambaSID attribute for
     # group of gidNumber=$userGidNumber
@@ -525,7 +442,7 @@ function user_get($uidnumber) {
     if ($result['count']) {
         return cleanUpEntry($result[0]);
     } else {
-        respond(_('User not found'), 404);
+        throw new Exception(_('User not found'), 404);
     }
 }
 

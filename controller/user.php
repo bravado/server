@@ -6,7 +6,7 @@ include "../_init.php";
 route("GET /?", "user_list");
 route("GET /([a-z_.0-9]+)/?", "user_get");
 route("PUT /([a-z_.0-9]+)/?", "user_update");
-route("POST /?", 'user_create');
+route("POST /?", 'handle_user_create');
 
 function handle_user_create() {
 
@@ -355,13 +355,6 @@ function user_update($uidnumber)
     }
 
      */
-}
-
-
-function get_next_id()
-{
-    // TODO not implemented
-    throw new Exception('Not Implemented');
 }
 
 

@@ -9,10 +9,6 @@ include dirname(__FILE__).'/lib/router.php';
 
 $ldap = ldap_login(LDAP_ADMINDN, LDAP_PW);
 
-if(!$ldap) {
-    respond('Cannot connect to LDAP server, check settings', 500);
-}
-
 // App modules
 include dirname(__FILE__).'/lib/usersgroups.php';
 

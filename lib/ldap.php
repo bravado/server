@@ -50,6 +50,6 @@ function ldap_login($dn, $passwd) {
     if ($ldapbind) {
         return ($ds);
     } else {
-        return (false);
+        throw new Exception(ldap_error($ds), ldap_errno($ds));
     }
 }

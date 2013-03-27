@@ -7,6 +7,7 @@ define(function() {
     Model.User = metaproject.Model({
         uid: null,
         uidnumber: null,
+        gidnumber: null,
         gecos: null,
         passwd: null
     });

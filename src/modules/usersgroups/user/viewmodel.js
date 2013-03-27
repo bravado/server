@@ -20,7 +20,7 @@ define(['Boiler'], function (Boiler) {
                 moduleContext.ds.get(id, self.model);
             }
             else {
-                self.model(moduleContext.ds.create(moduleContext.threadParams));
+                self.model(moduleContext.ds.create());
             }
         };
 
