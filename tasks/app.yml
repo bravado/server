@@ -1,0 +1,12 @@
+---
+  - name: Setup server application host
+    sudo: yes
+    copy: src=conf/server.conf dest=/etc/apache2/sites-available/server.conf owner=root group=root mode=0644
+
+  - name: Enable server app
+    sudo: yes
+    command: /usr/sbin/a2ensite server
+
+  - name: Restart Apache
+    sudo: yes
+    action: service name=apache2 state=restarted

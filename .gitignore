@@ -1,2 +1,5 @@
 server.iml
 .DS_Store
+.vagrant/
+www/vendor/
+www/composer.lock

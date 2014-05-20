@@ -1,0 +1,15 @@
+{
+    "name": "bravado/server",
+    "description": "Server Administration Panel",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Guilherme Barile",
+            "email": "guigouz@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "objectiveweb/router": "~1.0"
+    }
+}

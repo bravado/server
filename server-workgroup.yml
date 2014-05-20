@@ -1,0 +1,10 @@
+---
+- hosts: all
+  user: vagrant
+
+  tasks:
+    - include: tasks/common.yml
+    - include: tasks/apache-php.yml
+    - include: tasks/ldap.yml
+    - include: tasks/samba.yml
+    - include: tasks/squid.yml

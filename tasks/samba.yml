@@ -1,0 +1,10 @@
+# samba.yml
+---
+
+- name: Install Samba
+  sudo: yes
+  apt: name=samba state=present
+
+- name: Start Samba
+  sudo: yes
+  service: name=samba state=running enabled=yes

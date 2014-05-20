@@ -1,0 +1,10 @@
+# samba.yml
+---
+
+- name: Install Squid
+  sudo: yes
+  apt: name=squid state=present
+
+- name: Start Squid
+  sudo: yes
+  service: name=squid state=running enabled=yes

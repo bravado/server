@@ -1,0 +1,13 @@
+# samba.yml
+---
+
+- name: Install Openldap
+  sudo: yes
+  apt: name={{ item }} state=present
+  with_items:
+    - slapd
+    - ldap-utils
+
+- name: Start Openldap
+  sudo: yes
+  service: name=slapd state=running enabled=yes

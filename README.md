@@ -4,6 +4,10 @@ Administration panel for Enterprise Servers
 
 ## Modules
 
+  * DNSMasq
+  * Users/Groups
+  * Proxy
+
 ### Users and Groups
  Manages Samba/LDAP Accounts, compatible with smbldap-tools
 
