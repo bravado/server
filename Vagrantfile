@@ -13,17 +13,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty32"
 
   # Create the Workgroup server
-  config.vm.define "workgroup" do |box|
-    box.vm.network :private_network, ip: "192.168.64.10"
+  config.vm.define "workgroup" do |config|
+    config.vm.hostname = "workgroup.server"
+    config.vm.network :private_network, ip: "192.168.64.10"
 
-    box.vm.provision "ansible" do |ansible|
+    config.vm.provision "ansible" do |ansible|
       ansible.playbook = "server-workgroup.yml"
     end
   end
 
-  config.vm.define "cloud" do |box|
-    box.vm.network :private_network, ip: "192.168.65.10"
-    box.vm.provision "ansible" do |ansible|
+  config.vm.define "cloud" do |config|
+    config.vm.hostname = "cloud.server"
+    config.vm.network :private_network, ip: "192.168.65.10"
+    config.vm.provision "ansible" do |ansible|
       ansible.playbook = "server-cloud.yml"
     end
   end

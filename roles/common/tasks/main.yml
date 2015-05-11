@@ -1,0 +1,40 @@
+---
+- name: Enable multiverse repository
+  sudo: yes
+  apt_repository: repo="deb http://archive.ubuntu.com/ubuntu trusty multiverse" update_cache=yes
+
+- name: Enable multiverse-security repository
+  sudo: yes
+  apt_repository: repo="deb http://security.ubuntu.com/ubuntu trusty-security multiverse" update_cache=yes
+
+- name: Update apt cache
+  sudo: yes
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: Update language
+  sudo: yes
+  apt: pkg=language-pack-en
+  tags: common
+
+- name: Set timezone variables
+  sudo: yes
+  copy: content='{{ timezone }}'
+        dest=/etc/timezone
+        owner=root
+        group=root
+        mode=0644
+        backup=yes
+
+- name: Update timezone
+  sudo: yes
+  command: dpkg-reconfigure --frontend noninteractive tzdata
+
+- include: newrelic.yml
+  when: newrelic_key is defined
+
+- include: development.yml
+  when: ansible_bios_version == "VirtualBox"
+
+# TODO GENERATE ALL LOCALES
+# vi /etc/default/locale
+# adicionar LANGUAGE=C

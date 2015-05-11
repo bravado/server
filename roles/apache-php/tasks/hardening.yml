@@ -1,0 +1,4 @@
+---
+# habilitar porta 80
+- name: enable httpd connections
+  ufw: rule=allow port=80 proto=tcp

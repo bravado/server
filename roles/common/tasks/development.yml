@@ -1,0 +1,24 @@
+---
+- name: Install Dev Dependencies
+  sudo: yes
+  apt: name={{ item }} state=latest
+  with_items:
+    - bison
+    - flex
+    - libxml2-dev
+    - libmysqlclient-dev
+    - libssl-dev
+    - libpcre3-dev
+    - libbz2-dev
+    - libjpeg-dev
+    - libpng12-dev
+    - libxpm-dev
+    - libfreetype6-dev
+    - libt1-dev
+    - libgmp3-dev
+
+
+
+# TODO GENERATE ALL LOCALES
+# vi /etc/default/locale
+# adicionar LANGUAGE=C

@@ -1,0 +1,30 @@
+---
+- name: Add newrelic repo to sources
+  sudo: yes
+  apt_repository: repo='deb http://apt.newrelic.com/debian/ newrelic non-free' update_cache=yes
+  tags:
+    - newrelic
+
+- name: Trust in newrelic GPG key
+  sudo: yes
+  apt_key: id=548C16BF url=https://download.newrelic.com/548C16BF.gpg state=present
+  tags:
+     - newrelic
+
+- name: Install New Relic Sysmond
+  sudo: yes
+  apt: name=newrelic-sysmond state=present update_cache=yes
+  tags:
+    - newrelic
+
+- name: Add newrelic API key
+  sudo: yes
+  command: nrsysmond-config --set license_key={{ newrelic_key }}
+  tags:
+    - newrelic
+
+- name: Start nrsysmond
+  sudo: yes
+  service: name=newrelic-sysmond state=started
+  tags:
+    - newrelic

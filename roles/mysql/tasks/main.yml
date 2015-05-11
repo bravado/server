@@ -1,0 +1,43 @@
+# mysql.yml
+---
+
+- name: Install Mysql
+  sudo: yes
+  apt: name=mysql-server state=present
+
+- name: Install python-mysqldb
+  sudo: yes
+  apt: name=python-mysqldb state=present
+
+- name: Configure mysql
+  sudo: yes
+  template: src="my.j2" dest="/etc/mysql/my.cnf"
+            backup=yes
+            owner=root
+            group=root
+            mode=0644
+
+- name: Set datadir apparmor permissions
+  sudo: yes
+  lineinfile: line='alias /var/lib/mysql/ -> {{ datadir }}/,'
+              dest=/etc/apparmor.d/tunables/alias
+  when: datadir != '/var/lib/mysql'
+
+- name: Restart apparmor
+  sudo: yes
+  service: name=apparmor state=restarted
+  when: datadir != '/var/lib/mysql'
+
+- name: Move datadir
+  sudo: yes
+  shell: service mysql stop; mv /var/lib/mysql {{ datadir }}
+  args:
+    creates: "{{ datadir }}"
+  when: datadir != '/var/lib/mysql'
+
+- include: hardening-mysql.yml
+  when: mysql_root_password is defined
+
+- name: Start Mysql
+  sudo: yes
+  service: name=mysql state=started enabled=yes

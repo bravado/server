@@ -1,0 +1,4 @@
+---
+- name: restart logentries
+  sudo: yes
+  service: name=logentries state=restarted

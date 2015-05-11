@@ -1,0 +1,77 @@
+# apache-php.yml
+---
+- name: Install Apache
+  apt: name={{ item }} state=latest
+  with_items:
+    - apache2
+    - apache2-mpm-event
+    - libapache2-mod-fastcgi
+
+- name: Install PHP-FPM and modules
+  apt: name={{ item }} state=present
+  with_items:
+    - php5-fpm
+    - php5-mysqlnd
+    - php5-mcrypt
+    - php5-memcache
+    - php5-curl
+    - php5-gd
+    - php5-apcu
+    - php5-imagick
+    - php5
+
+- name: Enable mod_actions
+  shell: a2enmod actions
+  args:
+    creates: /etc/apache2/mods-enabled/actions.load
+  notify: restart apache
+
+- name: Enable mod_alias
+  shell: a2enmod alias
+  args:
+    creates: /etc/apache2/mods-enabled/alias.load
+  notify: restart apache
+
+- name: Enable mod_expires
+  shell: a2enmod expires
+  args:
+    creates: /etc/apache2/mods-enabled/expires.load
+  notify: restart apache
+
+- name: Enable mod_fastcgi
+  shell: a2enmod fastcgi
+  args:
+    creates: /etc/apache2/mods-enabled/fastcgi.load
+  notify: restart apache
+
+- name: Enable mod_headers
+  shell: a2enmod headers
+  args:
+    creates: /etc/apache2/mods-enabled/headers.load
+  notify: restart apache
+
+- name: Enable mod_rewrite
+  shell: a2enmod rewrite
+  args:
+    creates: /etc/apache2/mods-enabled/rewrite.load
+  notify: restart apache
+
+- name: Newrelic
+  include: newrelic.yml
+  when: newrelic_key is defined and ansible_bios_version != "VirtualBox"
+
+- name: Security rules
+  include: hardening.yml
+  when: ansible_bios_version != "VirtualBox"
+
+- name: Configure Listen
+  lineinfile: dest=/etc/apache2/ports.conf regexp="^Listen"
+    line="Listen {{ listen }}"
+  notify: restart apache
+
+- name: Copy default config
+  copy: src=000-default.conf dest=/etc/apache2/sites-available/000-default.conf mode=0644
+  notify: restart apache
+
+- name: Start Apache
+  service: name=apache2 state=started enabled=yes

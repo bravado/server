@@ -1,0 +1,17 @@
+---
+- name: Add couchdb repository
+  apt_repository: repo='ppa:couchdb/stable' update_cache=yes
+
+- name: Install couchdb
+  apt: name={{ item }} state=present
+  with_items:
+    - couchdb
+
+- name: setup bind_address
+  lineinfile: dest=/etc/couchdb/local.ini regexp='^;?bind_address.*'
+    line='bind_address = {{ bind_address }}'
+
+- name: Start Couchdb
+  service: name=couchdb state=started enabled=yes
+
+# TODO set admin password!!!

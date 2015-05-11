@@ -2,6 +2,38 @@
 
 Administration panel for Enterprise Servers
 
+## server.yml
+  * LDAP Users and Groups
+  * Management Interface
+  * Collectd
+  * OAuth
+  * Join Network Service (first key exchange)
+  
+### server-cloud.yml
+  Includes server.yml plus
+  
+  * Apache and PHP
+    
+  * MySQL
+  * CouchDB
+  * XMPP Server
+  * Redis
+  * n2n
+  * openvpn
+  * monit
+  * osquery
+  * s3ql
+  * syncthing
+
+nginx is used to handle public traffic, giving us extreme flexibility
+when exposing our services
+
+## server-workgroup.yml
+
+  * Samba 4 Users
+  * Primary Domain Controller
+  * Proxy
+  
 ## Modules
 
   * DNSMasq

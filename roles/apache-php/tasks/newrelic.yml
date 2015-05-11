@@ -1,0 +1,15 @@
+# enable newrelic-php5
+---
+- name: Configure newrelic
+  debconf: name=newrelic-php5 question='newrelic-php5/application-name' vtype="string" value="PHP Application"
+  tags: newrelic
+
+- name: Configure newrelic
+  debconf: name=newrelic-php5 question='newrelic-php5/license-key' vtype="string" value="{{ newrelic_key }}"
+  tags: newrelic
+
+- name: Install newrelic-php5
+  apt: name=newrelic-php5 state=present
+  notify: restart php-fpm
+  tags: newrelic
+

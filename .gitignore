@@ -3,3 +3,4 @@ server.iml
 .vagrant/
 www/vendor/
 www/composer.lock
+credentials/

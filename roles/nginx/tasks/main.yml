@@ -1,0 +1,17 @@
+---
+- name: Add nginx repository
+  apt_repository: repo='ppa:nginx/stable' update_cache=yes
+
+- name: Install nginx
+  apt: name={{ item }} state=present
+  with_items:
+    - nginx-full
+
+- name: Configure local http proxy
+  template: src=default.j2 dest=/etc/nginx/sites-available/default mode=0644
+  tags:
+    - config
+  notify: restart nginx
+
+- name: Start nginx
+  service: name=nginx state=started enabled=yes
