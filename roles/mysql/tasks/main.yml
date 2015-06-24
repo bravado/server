@@ -1,43 +1,28 @@
 # mysql.yml
 ---
 
-- name: Install Mysql
-  sudo: yes
-  apt: name=mysql-server state=present
+# Include variables and define needed variables.
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
 
-- name: Install python-mysqldb
-  sudo: yes
-  apt: name=python-mysqldb state=present
+# Setup/install tasks.
+- include: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
 
 - name: Configure mysql
-  sudo: yes
-  template: src="my.j2" dest="/etc/mysql/my.cnf"
+  template: src="my.j2" dest="{{ mysql_config_file }}"
             backup=yes
             owner=root
             group=root
             mode=0644
+  notify: restart mysql
 
-- name: Set datadir apparmor permissions
-  sudo: yes
-  lineinfile: line='alias /var/lib/mysql/ -> {{ datadir }}/,'
-              dest=/etc/apparmor.d/tunables/alias
-  when: datadir != '/var/lib/mysql'
-
-- name: Restart apparmor
-  sudo: yes
-  service: name=apparmor state=restarted
-  when: datadir != '/var/lib/mysql'
-
-- name: Move datadir
-  sudo: yes
-  shell: service mysql stop; mv /var/lib/mysql {{ datadir }}
-  args:
-    creates: "{{ datadir }}"
-  when: datadir != '/var/lib/mysql'
+- name: Start Mysql
+  service: name={{ mysql_daemon }} state=started enabled=yes
 
 - include: hardening-mysql.yml
   when: mysql_root_password is defined
 
-- name: Start Mysql
-  sudo: yes
-  service: name=mysql state=started enabled=yes

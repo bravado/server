@@ -1,0 +1,9 @@
+---
+- hosts: mysql
+
+  vars:
+    - mysql_root_password: "{{ lookup('password', playbook_dir + '/credentials/' + inventory_file + '/mysql length=32 chars=ascii_letters,digits') }}"
+
+  roles:
+    - { role: mysql,
+        bind_address: '0.0.0.0' }

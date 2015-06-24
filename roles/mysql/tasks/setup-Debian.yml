@@ -1,0 +1,11 @@
+---
+
+- name: Install Mysql
+  apt: name={{ item }} state=present
+  with_items:
+    - mysql-common
+    - mysql-server
+    - python-mysqldb
+
+- name: enable mysql connections
+  ufw: rule=allow port=3306 proto=tcp

@@ -1,0 +1,5 @@
+---
+mysql_daemon: mysqld
+mysql_config_file: /etc/my.cnf
+mysql_socket: /var/lib/mysql/mysql.sock
+mysql_log_file: /var/log/mysqld.log

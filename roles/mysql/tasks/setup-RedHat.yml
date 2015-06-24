@@ -1,0 +1,9 @@
+---
+- yum: name="https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm" state=present
+- yum: name="http://repo.mysql.com/mysql-community-release-el6-5.noarch.rpm" state=present
+
+- name: Install mysql
+  yum: name={{ item }} state=present
+  with_items:
+    - mysql-community-server
+    - MySQL-python
