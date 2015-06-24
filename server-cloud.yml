@@ -2,13 +2,10 @@
 - include: server.yml
 
 - hosts: all
-  vars:
-    - mysql_root_password: "{{ lookup('password', playbook_dir + '/credentials/' + inventory_file + '/mysql length=32 chars=ascii_letters,digits') }}"
 
   roles:
     - { role: apache-php,
         listen: "127.0.0.1:80" }
     - { role: couchdb,
         bind_address: "127.0.0.1" }
-    - { role: mysql }
     - { role: nginx }
