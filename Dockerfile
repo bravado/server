@@ -26,9 +26,8 @@ ENV OPENLDAP_ROOT_PASSWORD ""
 
 VOLUME [ "/var/lib/ldap" ]
 
+ADD /etc /etc
+
 ADD /html /var/www/html
-
-ADD /init.d /init.d
-
 
 EXPOSE 389
